@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
     cudaEventCreate(&stop);
 
     cudaEventRecord(start, 0);
-    convGpu<<<numBlocks, threadsPerBlock>>>(d_in, d_out, H_in, W_in, K);
+    convGpuTiled<<<numBlocks, threadsPerBlock>>>(d_in, d_out, H_in, W_in, K);
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
     
