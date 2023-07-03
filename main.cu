@@ -134,51 +134,11 @@ int main(int argc, char* argv[])
     // display_result(h_out_gpu, H_out, W_out);
     check_result(out, h_out_gpu, H_out, W_out);
 
-
-    float *h_out2;
-    h_out2=(float*)malloc(sizeof(float)*H_out*W_out);
-    // float * h_unroll = (float*)malloc(sizeof(float)*K*K*H_out*W_out);
-    float* in_unroll, *d_out2, *lin_d_mask;
-    cudaMalloc(&in_unroll, sizeof(float)*K*K*H_out*W_out);
-    cudaMalloc(&d_out2, sizeof(float)*H_out*W_out);
-    cudaMalloc(&lin_d_mask, sizeof(float)*K*K);
-    cudaMemcpy(lin_d_mask, mask, sizeof(float)*K*K, cudaMemcpyHostToDevice);
-    
-    dim3 unrollthreadsPerBlock(1024);
-    dim3 unrollnumBlocks((int)ceil(H_out*W_out/1024.0));
-    
-    cublasHandle_t handle;
-    cublasCreate(&handle);
-
-    const float alpha = 1.0f;
-    const float beta  = 0.0f;
-
-    unroll<<<unrollnumBlocks, unrollthreadsPerBlock>>>(d_in, in_unroll, H_in, W_in, K);
-    // cudaMemcpy(h_unroll, in_unroll, sizeof(float)*K*K*H_out*W_out, cudaMemcpyDeviceToHost);
-    // cout<<"now unroll result ---------------------"<<endl;
-    // display_result(h_unroll, K*K, H_out*W_out);
-
-    cudaEventRecord(start, 0);
-    cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, H_out*W_out, 1, K*K, &alpha, in_unroll, H_out*W_out, lin_d_mask, K*K, &beta, d_out2, H_out*W_out);
-    // cudaDeviceSynchronize();
-    cudaEventRecord(stop, 0);
-    cudaEventSynchronize(stop);
-    
-    cudaEventElapsedTime(&gpu_time, start, stop);
-
-    cout<<"im2col time is "<<gpu_time<<" ms"<<endl;
-    cudaMemcpy(h_out2, d_out2, sizeof(float)*H_out*W_out, cudaMemcpyDeviceToHost);
-    cout<<" now im2col workddddddd"<<endl;
-    check_result(out, h_out2, H_out, W_out);
-
     cudaFree(d_in);
     cudaFree(d_out);
-    // cudaFree(d_out2);
-    // cudaFree(lin_d_mask);
-    // cudaFree(in_unroll);
     
     free(in);
     free(out);
     free(mask);
-
+    free(h_out_gpu)
 }
