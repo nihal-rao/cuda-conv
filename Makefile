@@ -1,16 +1,17 @@
-CUDAFLAGS= -std=c++11 -c -arch=sm_61 -rdc=true
+CUDAFLAGS= -std=c++11 -arch=sm_61 -rdc=true
+BUILD=build
 
-program : conv_cpu.o conv_cuda_naive.o main.o
-	nvcc -std=c++11 -arch=sm_61 -rdc=true -o program main.o conv_cpu.o conv_cuda_naive.o
+program : $(BUILD)/conv_cpu.o $(BUILD)/conv_cuda_tiling.o main.cu conv.h
+	nvcc $(CUDAFLAGS) main.cu $(BUILD)/conv_cpu.o $(BUILD)/conv_cuda_tiling.o -o $@
 
-conv_cuda_naive.o : conv_cuda_naive.cu conv.h
-	nvcc $(CUDAFLAGS) conv_cuda_naive.cu
+$(BUILD)/conv_cuda_tiling.o : conv_cuda_tiling.cu conv.h
+	nvcc $(CUDAFLAGS) -c conv_cuda_tiling.cu -o $@
 
-conv_cpu.o : conv_cpu.cpp conv.h
-	g++ -g -c conv_cpu.cpp
+$(BUILD)/conv_cpu.o : conv_cpu.cpp conv.h
+	g++ -c conv_cpu.cpp -o $@ 
 
-main.o : main.cu conv.h
-	nvcc $(CUDAFLAGS) main.cu
+build:
+	mkdir -p $(BUILD)
 
-clean :
-	rm program conv_cpu.o conv_cuda_naive.o main.o
+clean:
+	rm -rf $(BUILD) program

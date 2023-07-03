@@ -1,9 +1,7 @@
 #include<bits/stdc++.h>
 #include "conv.h"
 #include "conv_gpu.cuh"
-#include "unroll.cuh"
 #include <cuda.h>
-#include <cublas_v2.h>
 
 #define THRESHOLD (0.001)
 
@@ -140,5 +138,5 @@ int main(int argc, char* argv[])
     free(in);
     free(out);
     free(mask);
-    free(h_out_gpu)
+    free(h_out_gpu);
 }
