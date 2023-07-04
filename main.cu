@@ -132,8 +132,10 @@ int main(int argc, char* argv[])
     // display_result(h_out_gpu, H_out, W_out);
     check_result(out, h_out_gpu, H_out, W_out);
 
+    int TILE_SIZE = block_size_w - K + 1;
+    dim3 numBlocks2((int)ceil(W_out/(float)TILE_SIZE), (int)ceil(H_out/(float)TILE_SIZE));
     cudaEventRecord(start, 0);
-    convGpuTiled<<<numBlocks, threadsPerBlock>>>(d_in, d_out, H_in, W_in, K);
+    convGpuTiled<<<numBlocks2, threadsPerBlock>>>(d_in, d_out, H_in, W_in, K, TILE_SIZE);
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
     
