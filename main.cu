@@ -117,7 +117,6 @@ int main(int argc, char* argv[])
     cudaEventCreate(&stop);
 
     cudaEventRecord(start, 0);
-    // convGpuTiled<<<numBlocks, threadsPerBlock>>>(d_in, d_out, H_in, W_in, K);
     convGpuNaive<<<numBlocks, threadsPerBlock>>>(d_in, d_out, H_in, W_in, K);
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
@@ -126,10 +125,26 @@ int main(int argc, char* argv[])
     // cudaEventDestroy(start);
     // cudaEventDestroy(stop);
 
-    cout << "GPU Time is "<<gpu_time << " ms" << endl;
+    cout << "GPU Naive Time is "<<gpu_time << " ms" << endl;
 
     cudaMemcpy(h_out_gpu, d_out, sizeof(float)*H_out*W_out, cudaMemcpyDeviceToHost);
-    cout<<" GPU result is "<<endl;
+    cout<<" GPU Naive result is "<<endl;
+    // display_result(h_out_gpu, H_out, W_out);
+    check_result(out, h_out_gpu, H_out, W_out);
+
+    cudaEventRecord(start, 0);
+    convGpuTiled<<<numBlocks, threadsPerBlock>>>(d_in, d_out, H_in, W_in, K);
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    
+    cudaEventElapsedTime(&gpu_time, start, stop);
+    // cudaEventDestroy(start);
+    // cudaEventDestroy(stop);
+
+    cout << "GPU Tiled Time is "<<gpu_time << " ms" << endl;
+
+    cudaMemcpy(h_out_gpu, d_out, sizeof(float)*H_out*W_out, cudaMemcpyDeviceToHost);
+    cout<<" GPU Tiled result is "<<endl;
     // display_result(h_out_gpu, H_out, W_out);
     check_result(out, h_out_gpu, H_out, W_out);
 
